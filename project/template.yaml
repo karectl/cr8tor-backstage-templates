@@ -319,6 +319,8 @@ spec:
         repoUrl: github.com?repo=karectl-projects&owner=karectl-crates
         branchName: project/${{ parameters.projectName | lower }}
         title: 'New Research Project: ${{ parameters.projectName }}'
+        targetBranchName: main
+        update: true    
         description: |
           ## New KARECTL Research Project Request
           
