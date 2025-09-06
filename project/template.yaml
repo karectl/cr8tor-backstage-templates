@@ -276,185 +276,41 @@ spec:
           description: Provide justification for resource requirements and external access needs
 
   steps:
-    - id: createProjectCrd
-      name: Create Project CRD
-      action: roadiehq:utils:fs:write
+    - id: fetch
+      name: Fetch template
+      action: fetch:template
       input:
-        path: projects/${{ parameters.projectName | lower }}/project.yaml
-        content: |
-          apiVersion: karectl.io/v1alpha1
-          kind: ResearchProject
-          metadata:
-            name: ${{ parameters.projectName | lower }}
-            namespace: karectl-system
-            annotations:
-              karectl.io/created-by: ${{ user.entity.metadata.name }}
-              karectl.io/created-at: ${{ '' | now }}
-              karectl.io/backstage-entity: ${{ user.entity.metadata.name }}
-          spec:
-            project:
-              name: ${{ parameters.projectName }}
-              description: ${{ parameters.description }}
-              principalInvestigator: ${{ parameters.principalInvestigator }}
-              researchDomain: ${{ parameters.researchDomain }}
-              ethicsApprovalNumber: ${{ parameters.ethicsApprovalNumber }}
-              
-            compliance:
-              dataClassification: ${{ parameters.dataClassification }}
-              frameworks: 
-                {% for framework in parameters.complianceFrameworks %}
-                - {{ framework }}
-                {% endfor %}
-              dataRetentionPeriod: ${{ parameters.dataRetentionPeriod }}
-              
-            duration:
-              months: ${{ parameters.projectDuration }}
-              autoRenewal: ${{ parameters.autoRenewal }}
-              
-            resources:
-              tier: ${{ parameters.resourceTier }}
-              storage:
-                home: ${{ parameters.storageRequirements.homeStorage }}Gi
-                data: ${{ parameters.storageRequirements.dataStorage }}Gi
-                scratch: ${{ parameters.storageRequirements.scratchStorage }}Gi
-                
-            network:
-              isolation: ${{ parameters.networkIsolation }}
-              allowedSites:
-                {% for site in parameters.allowedExternalSites %}
-                - domain: {{ site.domain }}
-                  ports: {{ site.ports | dump }}
-                  justification: {{ site.justification }}
-                {% endfor %}
-                
-            services:
-              compute:
-                {% for service in parameters.computeServices %}
-                - {{ service }}
-                {% endfor %}
-              data:
-                {% for service in parameters.dataServices %}
-                - {{ service }}
-                {% endfor %}
-              development:
-                {% for service in parameters.developmentServices %}
-                - {{ service }}
-                {% endfor %}
-              ml:
-                {% for service in parameters.mlServices %}
-                - {{ service }}
-                {% endfor %}
+        url: ./skeleton
+        values:
+          projectName: ${{ parameters.projectName }}
+          description: ${{ parameters.description }}
+          principalInvestigator: ${{ parameters.principalInvestigator }}
+          researchDomain: ${{ parameters.researchDomain }}
+          ethicsApprovalNumber: ${{ parameters.ethicsApprovalNumber }}
+          dataClassification: ${{ parameters.dataClassification }}
+          complianceFrameworks: ${{ parameters.complianceFrameworks }}
+          dataRetentionPeriod: ${{ parameters.dataRetentionPeriod }}
+          projectDuration: ${{ parameters.projectDuration }}
+          autoRenewal: ${{ parameters.autoRenewal }}
+          resourceTier: ${{ parameters.resourceTier }}
+          storageRequirements: ${{ parameters.storageRequirements }}
+          networkIsolation: ${{ parameters.networkIsolation }}
+          allowedExternalSites: ${{ parameters.allowedExternalSites }}
+          computeServices: ${{ parameters.computeServices }}
+          dataServices: ${{ parameters.dataServices }}
+          developmentServices: ${{ parameters.developmentServices }}
+          mlServices: ${{ parameters.mlServices }}
+          researchers: ${{ parameters.researchers }}
+          justification: ${{ parameters.justification }}
+          user: ${{ user.entity.metadata.name }}
+          now: ${{ '' | now }}
 
-    - id: createResearchersCrd
-      name: Create Researchers CRD
-      action: roadiehq:utils:fs:write
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
       input:
-        path: projects/${{ parameters.projectName | lower }}/researchers.yaml
-        content: |
-          apiVersion: karectl.io/v1alpha1
-          kind: ResearchTeam
-          metadata:
-            name: ${{ parameters.projectName | lower }}-team
-            namespace: karectl-system
-            labels:
-              karectl.io/project: ${{ parameters.projectName | lower }}
-          spec:
-            project: ${{ parameters.projectName | lower }}
-            members:
-              {% for researcher in parameters.researchers %}
-              - username: {{ researcher.username }}
-                role: {{ researcher.role }}
-                accessLevel: {{ researcher.accessLevel }}
-              {% endfor %}
-            keycloak:
-              groupName: ${{ parameters.projectName | lower }}
-              scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.karectl.local/scim' or 'https://keycloak.karectl.local/scim' }}
-
-    - id: createNetworkPolicyCrd  
-      name: Create Network Policy CRD
-      action: roadiehq:utils:fs:write
-      input:
-        path: projects/${{ parameters.projectName | lower }}/network-policy.yaml
-        content: |
-          apiVersion: karectl.io/v1alpha1
-          kind: ResearchNetworkPolicy
-          metadata:
-            name: ${{ parameters.projectName | lower }}-network
-            namespace: karectl-system
-            labels:
-              karectl.io/project: ${{ parameters.projectName | lower }}
-          spec:
-            project: ${{ parameters.projectName | lower }}
-            dataClassification: ${{ parameters.dataClassification }}
-            isolation: ${{ parameters.networkIsolation }}
-            
-            ciliumPolicies:
-              - name: ${{ parameters.projectName | lower }}-egress
-                spec:
-                  endpointSelector:
-                    matchLabels:
-                      karectl.io/project: ${{ parameters.projectName | lower }}
-                  egress:
-                    # Allow internal cluster communication
-                    - toEntities:
-                      - cluster
-                    # Allow DNS
-                    - toEndpoints:
-                      - matchLabels:
-                          k8s:io.kubernetes.pod.namespace: kube-system
-                          k8s:app: kube-dns
-                      toPorts:
-                      - ports:
-                        - port: "53"
-                          protocol: UDP
-                    # Project-specific external sites
-                    {% for site in parameters.allowedExternalSites %}
-                    - toFQDNs:
-                      - matchName: {{ site.domain }}
-                      toPorts:
-                      {% for port in site.ports %}
-                      - ports:
-                        - port: "{{ port }}"
-                          protocol: TCP
-                      {% endfor %}
-                    {% endfor %}
-
-    - id: createCatalogInfo
-      name: Create Backstage Catalog Info
-      action: roadiehq:utils:fs:write
-      input:
-        path: projects/${{ parameters.projectName | lower }}/catalog-info.yaml
-        content: |
-          apiVersion: backstage.io/v1alpha1
-          kind: System
-          metadata:
-            name: ${{ parameters.projectName | lower }}
-            title: ${{ parameters.projectName }}
-            description: ${{ parameters.description }}
-            annotations:
-              karectl.io/project-id: ${{ parameters.projectName | lower }}
-              karectl.io/principal-investigator: ${{ parameters.principalInvestigator }}
-              karectl.io/data-classification: ${{ parameters.dataClassification }}
-              karectl.io/research-domain: ${{ parameters.researchDomain }}
-              karectl.io/resource-tier: ${{ parameters.resourceTier }}
-              karectl.io/network-isolation: ${{ parameters.networkIsolation }}
-              argocd/app-name: ${{ parameters.projectName | lower }}
-              grafana/dashboard-selector: karectl-project-${{ parameters.projectName | lower }}
-            links:
-              - url: https://jupyter.${{ parameters.projectName | lower }}.karectl.local
-                title: JupyterHub
-                icon: web
-              - url: https://gitea.${{ parameters.projectName | lower }}.karectl.local
-                title: Gitea Repository
-                icon: web  
-              - url: https://argocd.karectl.local/applications/${{ parameters.projectName | lower }}
-                title: ArgoCD Application
-                icon: web
-          spec:
-            type: research-project
-            lifecycle: experimental
-            owner: ${{ parameters.principalInvestigator }}
-            domain: research-computing
+        repoUrl: github.com?repo=karectl-projects&owner=karectl-crates
+        defaultBranch: main
 
     - id: createPr
       name: Create Pull Request

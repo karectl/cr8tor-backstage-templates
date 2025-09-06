@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: {{ values.projectName | lower }}
+  title: "{{ values.projectName }}"
+  description: "{{ values.description }}"
+  annotations:
+    karectl.io/project-id: {{ values.projectName | lower }}
+    karectl.io/principal-investigator: "{{ values.principalInvestigator }}"
+    karectl.io/data-classification: "{{ values.dataClassification }}"
+    {% if values.researchDomain %}karectl.io/research-domain: "{{ values.researchDomain }}"{% endif %}
+    karectl.io/resource-tier: "{{ values.resourceTier }}"
+    karectl.io/network-isolation: "{{ values.networkIsolation }}"
+    argocd/app-name: {{ values.projectName | lower }}
+    grafana/dashboard-selector: karectl-project-{{ values.projectName | lower }}
+  links:
+    - url: https://jupyter.{{ values.projectName | lower }}.karectl.local
+      title: JupyterHub
+      icon: web
+    - url: https://gitea.{{ values.projectName | lower }}.karectl.local
+      title: Gitea Repository
+      icon: web  
+    - url: https://argocd.karectl.local/applications/{{ values.projectName | lower }}
+      title: ArgoCD Application
+      icon: web
+spec:
+  type: research-project
+  lifecycle: experimental
+  owner: "{{ values.principalInvestigator }}"
+  domain: research-computing
