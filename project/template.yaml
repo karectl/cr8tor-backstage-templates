@@ -334,14 +334,14 @@ spec:
           
           ### Compliance Requirements
           {% for framework in parameters.complianceFrameworks %}
-          - {{ framework }}
+          - ${{ framework }}
           {% endfor %}
           
           ### Services Requested
-          **Compute:** {{ parameters.computeServices | join(', ') }}
-          **Data:** {{ parameters.dataServices | join(', ') }}
-          **Development:** {{ parameters.developmentServices | join(', ') }}
-          **ML:** {{ parameters.mlServices | join(', ') }}
+          **Compute:** ${{ parameters.computeServices | join(', ') }}
+          **Data:** ${{ parameters.dataServices | join(', ') }}
+          **Development:** ${{ parameters.developmentServices | join(', ') }}
+          **ML:** ${{ parameters.mlServices | join(', ') }}
           
           ### Resource Requirements  
           - **Home Storage:** ${{ parameters.storageRequirements.homeStorage }}GB
@@ -353,12 +353,12 @@ spec:
           
           **External Sites:**
           {% for site in parameters.allowedExternalSites %}
-          - {{ site.domain }} (ports: {{ site.ports | join(', ') }}) - {{ site.justification }}
+          - ${{ site.domain }} (ports: ${{ site.ports | join(', ') }}) - ${{ site.justification }}
           {% endfor %}
           
           ### Team Members
           {% for researcher in parameters.researchers %}
-          - {{ researcher.username }} ({{ researcher.role }}, {{ researcher.accessLevel }})
+          - ${{ researcher.username }} (${{ researcher.role }}, ${{ researcher.accessLevel }})
           {% endfor %}
           
           ### Justification

@@ -1,58 +1,58 @@
 apiVersion: karectl.io/v1alpha1
 kind: ResearchProject
 metadata:
-  name: {{ values.projectName | lower }}
+  name: ${{ values.projectName | lower }}
   namespace: karectl-system
   annotations:
-    karectl.io/created-by: "{{ values.user }}"
-    karectl.io/created-at: "{{ values.now }}"
-    karectl.io/backstage-entity: "{{ values.user }}"
+    karectl.io/created-by: "${{ values.user }}"
+    karectl.io/created-at: "${{ values.now }}"
+    karectl.io/backstage-entity: "${{ values.user }}"
 spec:
   project:
-    name: "{{ values.projectName }}"
-    description: "{{ values.description }}"
-    principalInvestigator: "{{ values.principalInvestigator }}"
-    {% if values.researchDomain %}researchDomain: "{{ values.researchDomain }}"{% endif %}
-    {% if values.ethicsApprovalNumber %}ethicsApprovalNumber: "{{ values.ethicsApprovalNumber }}"{% endif %}
+    name: "${{ values.projectName }}"
+    description: "${{ values.description }}"
+    principalInvestigator: "${{ values.principalInvestigator }}"
+    {% if values.researchDomain %}researchDomain: "${{ values.researchDomain }}"{% endif %}
+    {% if values.ethicsApprovalNumber %}ethicsApprovalNumber: "${{ values.ethicsApprovalNumber }}"{% endif %}
     
   compliance:
-    dataClassification: "{{ values.dataClassification }}"
+    dataClassification: "${{ values.dataClassification }}"
     {% if values.complianceFrameworks and values.complianceFrameworks | length > 0 %}frameworks: 
-{% for framework in values.complianceFrameworks %}      - {{ framework }}
+{% for framework in values.complianceFrameworks %}      - ${{ framework }}
 {% endfor %}{% endif %}
-    {% if values.dataRetentionPeriod %}dataRetentionPeriod: {{ values.dataRetentionPeriod }}{% endif %}
+    {% if values.dataRetentionPeriod %}dataRetentionPeriod: ${{ values.dataRetentionPeriod }}{% endif %}
     
   duration:
-    months: {{ values.projectDuration }}
-    autoRenewal: {{ values.autoRenewal }}
+    months: ${{ values.projectDuration }}
+    autoRenewal: ${{ values.autoRenewal }}
     
   resources:
-    tier: "{{ values.resourceTier }}"
+    tier: "${{ values.resourceTier }}"
     storage:
-      home: "{{ values.storageRequirements.homeStorage }}Gi"
-      data: "{{ values.storageRequirements.dataStorage }}Gi"
-      scratch: "{{ values.storageRequirements.scratchStorage }}Gi"
+      home: "${{ values.storageRequirements.homeStorage }}Gi"
+      data: "${{ values.storageRequirements.dataStorage }}Gi"
+      scratch: "${{ values.storageRequirements.scratchStorage }}Gi"
       
   network:
-    isolation: "{{ values.networkIsolation }}"
+    isolation: "${{ values.networkIsolation }}"
     {% if values.allowedExternalSites and values.allowedExternalSites | length > 0 %}allowedSites:
-{% for site in values.allowedExternalSites %}      - domain: "{{ site.domain }}"
+{% for site in values.allowedExternalSites %}      - domain: "${{ site.domain }}"
         ports: 
-{% for port in site.ports %}          - {{ port }}
+{% for port in site.ports %}          - ${{ port }}
 {% endfor %}
-        justification: "{{ site.justification }}"
+        justification: "${{ site.justification }}"
 {% endfor %}{% endif %}
       
   services:
     {% if values.computeServices and values.computeServices | length > 0 %}compute:
-{% for service in values.computeServices %}      - {{ service }}
+{% for service in values.computeServices %}      - ${{ service }}
 {% endfor %}{% endif %}
     {% if values.dataServices and values.dataServices | length > 0 %}data:
-{% for service in values.dataServices %}      - {{ service }}
+{% for service in values.dataServices %}      - ${{ service }}
 {% endfor %}{% endif %}
     {% if values.developmentServices and values.developmentServices | length > 0 %}development:
-{% for service in values.developmentServices %}      - {{ service }}
+{% for service in values.developmentServices %}      - ${{ service }}
 {% endfor %}{% endif %}
     {% if values.mlServices and values.mlServices | length > 0 %}ml:
-{% for service in values.mlServices %}      - {{ service }}
+{% for service in values.mlServices %}      - ${{ service }}
 {% endfor %}{% endif %}

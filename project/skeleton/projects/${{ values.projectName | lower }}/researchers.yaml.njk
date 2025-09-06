@@ -1,17 +1,17 @@
 apiVersion: karectl.io/v1alpha1
 kind: ResearchTeam
 metadata:
-  name: {{ values.projectName | lower }}-team
+  name: ${{ values.projectName | lower }}-team
   namespace: karectl-system
   labels:
-    karectl.io/project: {{ values.projectName | lower }}
+    karectl.io/project: ${{ values.projectName | lower }}
 spec:
-  project: {{ values.projectName | lower }}
+  project: ${{ values.projectName | lower }}
   {% if values.researchers and values.researchers | length > 0 %}members:
-{% for researcher in values.researchers %}    - username: "{{ researcher.username }}"
-      role: "{{ researcher.role }}"
-      accessLevel: "{{ researcher.accessLevel }}"
+{% for researcher in values.researchers %}    - username: "${{ researcher.username }}"
+      role: "${{ researcher.role }}"
+      accessLevel: "${{ researcher.accessLevel }}"
 {% endfor %}{% endif %}
   keycloak:
-    groupName: {{ values.projectName | lower }}
+    groupName: ${{ values.projectName | lower }}
     scimEndpoint: "{% if values.dataClassification == 'restricted' %}https://keycloak-restricted.karectl.local/scim{% else %}https://keycloak.karectl.local/scim{% endif %}"

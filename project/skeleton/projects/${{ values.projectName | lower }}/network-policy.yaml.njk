@@ -1,21 +1,21 @@
 apiVersion: karectl.io/v1alpha1
 kind: ResearchNetworkPolicy
 metadata:
-  name: {{ values.projectName | lower }}-network
+  name: ${{ values.projectName | lower }}-network
   namespace: karectl-system
   labels:
-    karectl.io/project: {{ values.projectName | lower }}
+    karectl.io/project: ${{ values.projectName | lower }}
 spec:
-  project: {{ values.projectName | lower }}
-  dataClassification: "{{ values.dataClassification }}"
-  isolation: "{{ values.networkIsolation }}"
+  project: ${{ values.projectName | lower }}
+  dataClassification: "${{ values.dataClassification }}"
+  isolation: "${{ values.networkIsolation }}"
   
   ciliumPolicies:
-    - name: {{ values.projectName | lower }}-egress
+    - name: ${{ values.projectName | lower }}-egress
       spec:
         endpointSelector:
           matchLabels:
-            karectl.io/project: {{ values.projectName | lower }}
+            karectl.io/project: ${{ values.projectName | lower }}
         egress:
           # Allow internal cluster communication
           - toEntities:
@@ -32,11 +32,11 @@ spec:
           # Project-specific external sites
           {% if values.allowedExternalSites and values.allowedExternalSites | length > 0 %}{% for site in values.allowedExternalSites %}
           - toFQDNs:
-            - matchName: "{{ site.domain }}"
+            - matchName: "${{ site.domain }}"
             toPorts:
             {% for port in site.ports %}
             - ports:
-              - port: "{{ port }}"
+              - port: "${{ port }}"
                 protocol: TCP
             {% endfor %}
           {% endfor %}{% endif %}
