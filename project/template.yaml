@@ -1,77 +1,540 @@
-
+# backstage-templates/k8tre-research-project/template.yaml
 apiVersion: scaffolder.backstage.io/v1beta3
-# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
 kind: Template
 metadata:
-  name: user
-  title: User
-  description: Template for entering user information
+  name: k8tre-research-project
+  title: Create K8TRE Research Project
+  description: Provision a new research project workspace with required services and access controls
+  tags:
+    - k8tre
+    - research
+    - workspace
 spec:
-  owner: user:guest
-  type: service
-  # These parameters are used to generate the input form in the frontend, and are
-  # used to gather input data for the execution of the template.
+  owner: platform-team
+  type: research-project
   parameters:
-    - title: Fill in some steps
+    - title: Project Information
       required:
-        - name
+        - projectName
+        - description
+        - principalInvestigator
       properties:
-        description: 
+        projectName:
+          title: Project Name
           type: string
-        apps:
-          type: array
-          items:
-            type: object
-            properties:
-              name: 
-                type: string
-              type: 
-                type: string
-              url: 
-                type: string
-              osType:
-                type: string
-                enum: ["linux", "windows"]
-              config:
-                type: object
-                additionalProperties: true
-        profiles:
-          type: array
-          items:
-            type: object
-            properties:
-              display_name:
-                type: string
-              description:
-                type: string
-              slug:
-                type: string
-              kubespawner_override:
-                type: object
-                properties:
-                  image:
-                    type: string
-                  env:
-                    type: object
-                    additionalProperties: true
-    - title: Choose a location
-      required:
-        - repoUrl
-      properties:
-        repoUrl:
-          title: Repository Location
+          pattern: '^[a-z][a-z0-9-]*[a-z0-9]$'
+          description: 'Must be lowercase, alphanumeric, and hyphens only'
+        description:
+          title: Project Description
           type: string
-          ui:field: RepoUrlPicker
+          ui:widget: textarea
           ui:options:
-            allowedHosts:
-              - github.com
+            rows: 3
+        principalInvestigator:
+          title: Principal Investigator
+          type: string
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - User
+        researchDomain:
+          title: Research Domain
+          type: string
+          enum:
+            - biomedical
+            - social-science
+            - environmental
+            - physics
+            - computer-science
+            - interdisciplinary
+        ethicsApprovalNumber:
+          title: Ethics Approval Number
+          type: string
+          description: Required for projects handling sensitive data
+        
+    - title: Data Classification & Compliance
+      required:
+        - dataClassification
+        - complianceFrameworks
+      properties:
+        dataClassification:
+          title: Data Classification Level
+          type: string
+          enum:
+            - public
+            - internal
+            - confidential
+            - restricted
+          enumNames:
+            - 'Public (No restrictions)'
+            - 'Internal (University only)'
+            - 'Confidential (Authorized personnel)'
+            - 'Restricted (Highest security)'
+        complianceFrameworks:
+          title: Compliance Requirements
+          type: array
+          items:
+            type: string
+            enum:
+              - gdpr
+              - hipaa
+              - ferpa
+              - iso27001
+              - nhs-dspt
+          ui:widget: checkboxes
+        dataRetentionPeriod:
+          title: Data Retention Period (years)
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 7
+        
+    - title: Team Members
+      properties:
+        researchers:
+          title: Researchers
+          type: array
+          items:
+            type: object
+            properties:
+              username:
+                type: string
+                title: Username/Email
+              role:
+                type: string
+                enum:
+                  - researcher
+                  - analyst
+                  - student
+                  - collaborator
+                title: Role
+              accessLevel:
+                type: string
+                enum:
+                  - read-only
+                  - read-write
+                  - admin
+                title: Access Level
+          ui:options:
+            addButtonText: Add Researcher
+        
+    - title: Required Services
+      properties:
+        computeServices:
+          title: Compute Services
+          type: array
+          items:
+            type: string
+            enum:
+              - jupyterhub
+              - rstudio-server
+              - vscode-server
+              - kubevirt-vms
+              - spark-cluster
+              - dask-cluster
+          ui:widget: checkboxes
+          default:
+            - jupyterhub
+        dataServices:
+          title: Data Services
+          type: array
+          items:
+            type: string
+            enum:
+              - postgresql
+              - mongodb
+              - minio-storage
+              - nfs-storage
+              - redis-cache
+          ui:widget: checkboxes
+        developmentServices:
+          title: Development Services
+          type: array
+          items:
+            type: string
+            enum:
+              - gitea
+              - gitlab-runner
+              - docker-registry
+              - artifact-registry
+          ui:widget: checkboxes
+        mlServices:
+          title: ML/Analytics Services  
+          type: array
+          items:
+            type: string
+            enum:
+              - mlflow
+              - kubeflow
+              - tensorboard
+              - airflow
+              - prefect
+          ui:widget: checkboxes
+            
+    - title: Resource Requirements
+      properties:
+        resourceTier:
+          title: Resource Tier
+          type: string
+          enum:
+            - small
+            - medium
+            - large
+            - xlarge
+          enumNames:
+            - 'Small (4 vCPU, 16GB RAM)'
+            - 'Medium (8 vCPU, 32GB RAM)'
+            - 'Large (16 vCPU, 64GB RAM)'  
+            - 'X-Large (32 vCPU, 128GB RAM)'
+          default: medium
+        storageRequirements:
+          title: Storage Requirements
+          type: object
+          properties:
+            homeStorage:
+              title: Home Directory Storage (GB)
+              type: integer
+              minimum: 10
+              maximum: 1000
+              default: 100
+            dataStorage:
+              title: Data Storage (GB)
+              type: integer
+              minimum: 100
+              maximum: 10000
+              default: 500
+            scratchStorage:
+              title: Scratch Storage (GB)
+              type: integer
+              minimum: 50
+              maximum: 5000
+              default: 200
+        
+    - title: Network Access Control
+      properties:
+        allowedExternalSites:
+          title: Allowed External Sites
+          type: array
+          items:
+            type: object
+            properties:
+              domain:
+                type: string
+                title: Domain/URL
+                description: 'e.g., github.com, arxiv.org, *.nature.com'
+              ports:
+                type: array
+                items:
+                  type: integer
+                title: Allowed Ports
+                default: [80, 443]
+              justification:
+                type: string
+                title: Justification
+                description: Why this site is needed for research
+          ui:options:
+            addButtonText: Add External Site
+        networkIsolation:
+          title: Network Isolation Level
+          type: string
+          enum:
+            - standard
+            - strict
+            - air-gapped
+          enumNames:
+            - 'Standard (Common research sites allowed)'
+            - 'Strict (Only specified sites)'
+            - 'Air-gapped (No external access)'
+          default: standard
+          
+    - title: Duration & Approval
+      required:
+        - projectDuration
+        - approvalRequired
+      properties:
+        projectDuration:
+          title: Project Duration (months)
+          type: integer
+          minimum: 1
+          maximum: 60
+          default: 12
+        autoRenewal:
+          title: Enable Auto-renewal
+          type: boolean
+          default: false
+        approvalRequired:
+          title: This project requires approval
+          type: boolean
+          default: true
+          ui:readonly: true
+        justification:
+          title: Project Justification
+          type: string
+          ui:widget: textarea
+          ui:options:
+            rows: 4
+          description: Provide justification for resource requirements and external access needs
+
   steps:
-    - id: fetch-base
-      name: Fetch Base
-      action: fetch:template
+    - id: generate-project-id
+      name: Generate Project ID
+      action: roadiehq:utils:merge
       input:
-        url: ./skeleton
-        values:
-          name: ${{parameters.name}}
-          owner: ${{parameters.owner}}
-          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+        content:
+          projectId: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+
+    - id: create-project-crd
+      name: Create Project CRD
+      action: fs:write
+      input:
+        files:
+          - path: projects/${{ steps['generate-project-id'].output.projectId }}/project.yaml
+            content: |
+              apiVersion: k8tre.io/v1alpha1
+              kind: ResearchProject
+              metadata:
+                name: ${{ steps['generate-project-id'].output.projectId }}
+                namespace: k8tre-system
+                annotations:
+                  k8tre.io/created-by: ${{ user.entity.metadata.name }}
+                  k8tre.io/created-at: ${{ '' | now }}
+                  k8tre.io/backstage-entity: ${{ user.entity.metadata.name }}
+              spec:
+                project:
+                  name: ${{ parameters.projectName }}
+                  description: ${{ parameters.description }}
+                  principalInvestigator: ${{ parameters.principalInvestigator }}
+                  researchDomain: ${{ parameters.researchDomain }}
+                  ethicsApprovalNumber: ${{ parameters.ethicsApprovalNumber }}
+                  
+                compliance:
+                  dataClassification: ${{ parameters.dataClassification }}
+                  frameworks: 
+                    {% for framework in parameters.complianceFrameworks %}
+                    - {{ framework }}
+                    {% endfor %}
+                  dataRetentionPeriod: ${{ parameters.dataRetentionPeriod }}
+                  
+                duration:
+                  months: ${{ parameters.projectDuration }}
+                  autoRenewal: ${{ parameters.autoRenewal }}
+                  
+                resources:
+                  tier: ${{ parameters.resourceTier }}
+                  storage:
+                    home: ${{ parameters.storageRequirements.homeStorage }}Gi
+                    data: ${{ parameters.storageRequirements.dataStorage }}Gi
+                    scratch: ${{ parameters.storageRequirements.scratchStorage }}Gi
+                    
+                network:
+                  isolation: ${{ parameters.networkIsolation }}
+                  allowedSites:
+                    {% for site in parameters.allowedExternalSites %}
+                    - domain: {{ site.domain }}
+                      ports: {{ site.ports | dump }}
+                      justification: {{ site.justification }}
+                    {% endfor %}
+                    
+                services:
+                  compute:
+                    {% for service in parameters.computeServices %}
+                    - {{ service }}
+                    {% endfor %}
+                  data:
+                    {% for service in parameters.dataServices %}
+                    - {{ service }}
+                    {% endfor %}
+                  development:
+                    {% for service in parameters.developmentServices %}
+                    - {{ service }}
+                    {% endfor %}
+                  ml:
+                    {% for service in parameters.mlServices %}
+                    - {{ service }}
+                    {% endfor %}
+
+    - id: create-researchers-crd
+      name: Create Researchers CRD
+      action: fs:write
+      input:
+        files:
+          - path: projects/${{ steps['generate-project-id'].output.projectId }}/researchers.yaml
+            content: |
+              apiVersion: k8tre.io/v1alpha1
+              kind: ResearchTeam
+              metadata:
+                name: ${{ steps['generate-project-id'].output.projectId }}-team
+                namespace: k8tre-system
+                labels:
+                  k8tre.io/project: ${{ steps['generate-project-id'].output.projectId }}
+              spec:
+                project: ${{ steps['generate-project-id'].output.projectId }}
+                members:
+                  {% for researcher in parameters.researchers %}
+                  - username: {{ researcher.username }}
+                    role: {{ researcher.role }}
+                    accessLevel: {{ researcher.accessLevel }}
+                  {% endfor %}
+                keycloak:
+                  groupName: ${{ steps['generate-project-id'].output.projectId }}
+                  scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.k8tre.local/scim' or 'https://keycloak.k8tre.local/scim' }}
+
+    - id: create-network-policy-crd  
+      name: Create Network Policy CRD
+      action: fs:write
+      input:
+        files:
+          - path: projects/${{ steps['generate-project-id'].output.projectId }}/network-policy.yaml
+            content: |
+              apiVersion: k8tre.io/v1alpha1
+              kind: ResearchNetworkPolicy
+              metadata:
+                name: ${{ steps['generate-project-id'].output.projectId }}-network
+                namespace: k8tre-system
+                labels:
+                  k8tre.io/project: ${{ steps['generate-project-id'].output.projectId }}
+              spec:
+                project: ${{ steps['generate-project-id'].output.projectId }}
+                dataClassification: ${{ parameters.dataClassification }}
+                isolation: ${{ parameters.networkIsolation }}
+                
+                ciliumPolicies:
+                  - name: ${{ steps['generate-project-id'].output.projectId }}-egress
+                    spec:
+                      endpointSelector:
+                        matchLabels:
+                          k8tre.io/project: ${{ steps['generate-project-id'].output.projectId }}
+                      egress:
+                        # Allow internal cluster communication
+                        - toEntities:
+                          - cluster
+                        # Allow DNS
+                        - toEndpoints:
+                          - matchLabels:
+                              k8s:io.kubernetes.pod.namespace: kube-system
+                              k8s:app: kube-dns
+                          toPorts:
+                          - ports:
+                            - port: "53"
+                              protocol: UDP
+                        # Project-specific external sites
+                        {% for site in parameters.allowedExternalSites %}
+                        - toFQDNs:
+                          - matchName: {{ site.domain }}
+                          toPorts:
+                          {% for port in site.ports %}
+                          - ports:
+                            - port: "{{ port }}"
+                              protocol: TCP
+                          {% endfor %}
+                        {% endfor %}
+
+    - id: create-catalog-info
+      name: Create Backstage Catalog Info
+      action: fs:write
+      input:
+        files:
+          - path: projects/${{ steps['generate-project-id'].output.projectId }}/catalog-info.yaml
+            content: |
+              apiVersion: backstage.io/v1alpha1
+              kind: System
+              metadata:
+                name: ${{ steps['generate-project-id'].output.projectId }}
+                title: ${{ parameters.projectName }}
+                description: ${{ parameters.description }}
+                annotations:
+                  k8tre.io/project-id: ${{ steps['generate-project-id'].output.projectId }}
+                  k8tre.io/principal-investigator: ${{ parameters.principalInvestigator }}
+                  k8tre.io/data-classification: ${{ parameters.dataClassification }}
+                  k8tre.io/research-domain: ${{ parameters.researchDomain }}
+                  k8tre.io/resource-tier: ${{ parameters.resourceTier }}
+                  k8tre.io/network-isolation: ${{ parameters.networkIsolation }}
+                  argocd/app-name: ${{ steps['generate-project-id'].output.projectId }}
+                  grafana/dashboard-selector: k8tre-project-${{ steps['generate-project-id'].output.projectId }}
+                links:
+                  - url: https://jupyter.${{ steps['generate-project-id'].output.projectId }}.k8tre.local
+                    title: JupyterHub
+                    icon: web
+                  - url: https://gitea.${{ steps['generate-project-id'].output.projectId }}.k8tre.local
+                    title: Gitea Repository
+                    icon: web  
+                  - url: https://argocd.k8tre.local/applications/${{ steps['generate-project-id'].output.projectId }}
+                    title: ArgoCD Application
+                    icon: web
+              spec:
+                type: research-project
+                lifecycle: experimental
+                owner: ${{ parameters.principalInvestigator }}
+                domain: research-computing
+
+    - id: create-pr
+      name: Create Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?repo=k8tre-projects&owner=k8tre
+        branchName: project/${{ steps['generate-project-id'].output.projectId }}
+        title: 'New Research Project: ${{ parameters.projectName }}'
+        description: |
+          ## New K8TRE Research Project Request
+          
+          **Project:** ${{ parameters.projectName }}
+          **PI:** ${{ parameters.principalInvestigator }}
+          **Data Classification:** ${{ parameters.dataClassification }}
+          **Resource Tier:** ${{ parameters.resourceTier }}
+          
+          ### Project Details
+          ${{ parameters.description }}
+          
+          ### Compliance Requirements
+          {% for framework in parameters.complianceFrameworks %}
+          - {{ framework }}
+          {% endfor %}
+          
+          ### Services Requested
+          **Compute:** {{ parameters.computeServices | join(', ') }}
+          **Data:** {{ parameters.dataServices | join(', ') }}
+          **Development:** {{ parameters.developmentServices | join(', ') }}
+          **ML:** {{ parameters.mlServices | join(', ') }}
+          
+          ### Resource Requirements  
+          - **Home Storage:** ${{ parameters.storageRequirements.homeStorage }}GB
+          - **Data Storage:** ${{ parameters.storageRequirements.dataStorage }}GB
+          - **Scratch Storage:** ${{ parameters.storageRequirements.scratchStorage }}GB
+          
+          ### Network Access
+          **Isolation Level:** ${{ parameters.networkIsolation }}
+          
+          **External Sites:**
+          {% for site in parameters.allowedExternalSites %}
+          - {{ site.domain }} (ports: {{ site.ports | join(', ') }}) - {{ site.justification }}
+          {% endfor %}
+          
+          ### Team Members
+          {% for researcher in parameters.researchers %}
+          - {{ researcher.username }} ({{ researcher.role }}, {{ researcher.accessLevel }})
+          {% endfor %}
+          
+          ### Justification
+          ${{ parameters.justification }}
+          
+          ---
+          
+          **Ethics Approval:** ${{ parameters.ethicsApprovalNumber }}
+          **Duration:** ${{ parameters.projectDuration }} months
+          **Auto-renewal:** ${{ parameters.autoRenewal }}
+          
+          Once approved and merged, ArgoCD will provision the workspace automatically.
+
+    - id: register
+      name: Register in Backstage Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['create-pr'].output.repoContentsUrl }}
+        catalogInfoPath: '/projects/${{ steps['generate-project-id'].output.projectId }}/catalog-info.yaml'
+
+  output:
+    links:
+      - title: View Pull Request
+        url: ${{ steps['create-pr'].output.remoteUrl }}
+      - title: View in Catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
