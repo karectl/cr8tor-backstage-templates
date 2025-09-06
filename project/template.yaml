@@ -280,12 +280,12 @@ spec:
       name: Create Project CRD
       action: roadiehq:utils:fs:write
       input:
-        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/project.yaml
+        path: projects/${{ parameters.projectName | lower }}/project.yaml
         content: |
           apiVersion: karectl.io/v1alpha1
           kind: ResearchProject
           metadata:
-            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            name: ${{ parameters.projectName | lower }}
             namespace: karectl-system
             annotations:
               karectl.io/created-by: ${{ user.entity.metadata.name }}
@@ -349,17 +349,17 @@ spec:
       name: Create Researchers CRD
       action: roadiehq:utils:fs:write
       input:
-        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/researchers.yaml
+        path: projects/${{ parameters.projectName | lower }}/researchers.yaml
         content: |
           apiVersion: karectl.io/v1alpha1
           kind: ResearchTeam
           metadata:
-            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-team
+            name: ${{ parameters.projectName | lower }}-team
             namespace: karectl-system
             labels:
-              karectl.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              karectl.io/project: ${{ parameters.projectName | lower }}
           spec:
-            project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            project: ${{ parameters.projectName | lower }}
             members:
               {% for researcher in parameters.researchers %}
               - username: {{ researcher.username }}
@@ -367,33 +367,33 @@ spec:
                 accessLevel: {{ researcher.accessLevel }}
               {% endfor %}
             keycloak:
-              groupName: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              groupName: ${{ parameters.projectName | lower }}
               scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.karectl.local/scim' or 'https://keycloak.karectl.local/scim' }}
 
     - id: createNetworkPolicyCrd  
       name: Create Network Policy CRD
       action: roadiehq:utils:fs:write
       input:
-        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/network-policy.yaml
+        path: projects/${{ parameters.projectName | lower }}/network-policy.yaml
         content: |
           apiVersion: karectl.io/v1alpha1
           kind: ResearchNetworkPolicy
           metadata:
-            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-network
+            name: ${{ parameters.projectName | lower }}-network
             namespace: karectl-system
             labels:
-              karectl.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              karectl.io/project: ${{ parameters.projectName | lower }}
           spec:
-            project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            project: ${{ parameters.projectName | lower }}
             dataClassification: ${{ parameters.dataClassification }}
             isolation: ${{ parameters.networkIsolation }}
             
             ciliumPolicies:
-              - name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-egress
+              - name: ${{ parameters.projectName | lower }}-egress
                 spec:
                   endpointSelector:
                     matchLabels:
-                      karectl.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+                      karectl.io/project: ${{ parameters.projectName | lower }}
                   egress:
                     # Allow internal cluster communication
                     - toEntities:
@@ -423,31 +423,31 @@ spec:
       name: Create Backstage Catalog Info
       action: roadiehq:utils:fs:write
       input:
-        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/catalog-info.yaml
+        path: projects/${{ parameters.projectName | lower }}/catalog-info.yaml
         content: |
           apiVersion: backstage.io/v1alpha1
           kind: System
           metadata:
-            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            name: ${{ parameters.projectName | lower }}
             title: ${{ parameters.projectName }}
             description: ${{ parameters.description }}
             annotations:
-              karectl.io/project-id: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              karectl.io/project-id: ${{ parameters.projectName | lower }}
               karectl.io/principal-investigator: ${{ parameters.principalInvestigator }}
               karectl.io/data-classification: ${{ parameters.dataClassification }}
               karectl.io/research-domain: ${{ parameters.researchDomain }}
               karectl.io/resource-tier: ${{ parameters.resourceTier }}
               karectl.io/network-isolation: ${{ parameters.networkIsolation }}
-              argocd/app-name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-              grafana/dashboard-selector: karectl-project-${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              argocd/app-name: ${{ parameters.projectName | lower }}
+              grafana/dashboard-selector: karectl-project-${{ parameters.projectName | lower }}
             links:
-              - url: https://jupyter.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.karectl.local
+              - url: https://jupyter.${{ parameters.projectName | lower }}.karectl.local
                 title: JupyterHub
                 icon: web
-              - url: https://gitea.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.karectl.local
+              - url: https://gitea.${{ parameters.projectName | lower }}.karectl.local
                 title: Gitea Repository
                 icon: web  
-              - url: https://argocd.karectl.local/applications/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              - url: https://argocd.karectl.local/applications/${{ parameters.projectName | lower }}
                 title: ArgoCD Application
                 icon: web
           spec:
@@ -461,7 +461,7 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: github.com?repo=karectl-projects&owner=karectl-crates
-        branchName: project/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+        branchName: project/${{ parameters.projectName | lower }}
         title: 'New Research Project: ${{ parameters.projectName }}'
         description: |
           ## New KARECTL Research Project Request
@@ -519,7 +519,7 @@ spec:
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps['createPr'].output.repoContentsUrl }}
-        catalogInfoPath: "/projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/catalog-info.yaml"
+        catalogInfoPath: "/projects/${{ parameters.projectName | lower }}/catalog-info.yaml"
 
   output:
     links:
