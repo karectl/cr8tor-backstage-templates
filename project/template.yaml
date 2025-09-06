@@ -280,185 +280,181 @@ spec:
       name: Create Project CRD
       action: roadiehq:utils:fs:write
       input:
-        files:
-          - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/project.yaml
-            content: |
-              apiVersion: k8tre.io/v1alpha1
-              kind: ResearchProject
-              metadata:
-                name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                namespace: k8tre-system
-                annotations:
-                  k8tre.io/created-by: ${{ user.entity.metadata.name }}
-                  k8tre.io/created-at: ${{ '' | now }}
-                  k8tre.io/backstage-entity: ${{ user.entity.metadata.name }}
-              spec:
-                project:
-                  name: ${{ parameters.projectName }}
-                  description: ${{ parameters.description }}
-                  principalInvestigator: ${{ parameters.principalInvestigator }}
-                  researchDomain: ${{ parameters.researchDomain }}
-                  ethicsApprovalNumber: ${{ parameters.ethicsApprovalNumber }}
-                  
-                compliance:
-                  dataClassification: ${{ parameters.dataClassification }}
-                  frameworks: 
-                    {% for framework in parameters.complianceFrameworks %}
-                    - {{ framework }}
-                    {% endfor %}
-                  dataRetentionPeriod: ${{ parameters.dataRetentionPeriod }}
-                  
-                duration:
-                  months: ${{ parameters.projectDuration }}
-                  autoRenewal: ${{ parameters.autoRenewal }}
-                  
-                resources:
-                  tier: ${{ parameters.resourceTier }}
-                  storage:
-                    home: ${{ parameters.storageRequirements.homeStorage }}Gi
-                    data: ${{ parameters.storageRequirements.dataStorage }}Gi
-                    scratch: ${{ parameters.storageRequirements.scratchStorage }}Gi
-                    
-                network:
-                  isolation: ${{ parameters.networkIsolation }}
-                  allowedSites:
-                    {% for site in parameters.allowedExternalSites %}
-                    - domain: {{ site.domain }}
-                      ports: {{ site.ports | dump }}
-                      justification: {{ site.justification }}
-                    {% endfor %}
-                    
-                services:
-                  compute:
-                    {% for service in parameters.computeServices %}
-                    - {{ service }}
-                    {% endfor %}
-                  data:
-                    {% for service in parameters.dataServices %}
-                    - {{ service }}
-                    {% endfor %}
-                  development:
-                    {% for service in parameters.developmentServices %}
-                    - {{ service }}
-                    {% endfor %}
-                  ml:
-                    {% for service in parameters.mlServices %}
-                    - {{ service }}
-                    {% endfor %}
+        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/project.yaml
+        content: |
+          apiVersion: k8tre.io/v1alpha1
+          kind: ResearchProject
+          metadata:
+            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            namespace: k8tre-system
+            annotations:
+              k8tre.io/created-by: ${{ user.entity.metadata.name }}
+              k8tre.io/created-at: ${{ '' | now }}
+              k8tre.io/backstage-entity: ${{ user.entity.metadata.name }}
+          spec:
+            project:
+              name: ${{ parameters.projectName }}
+              description: ${{ parameters.description }}
+              principalInvestigator: ${{ parameters.principalInvestigator }}
+              researchDomain: ${{ parameters.researchDomain }}
+              ethicsApprovalNumber: ${{ parameters.ethicsApprovalNumber }}
+              
+            compliance:
+              dataClassification: ${{ parameters.dataClassification }}
+              frameworks: 
+                {% for framework in parameters.complianceFrameworks %}
+                - {{ framework }}
+                {% endfor %}
+              dataRetentionPeriod: ${{ parameters.dataRetentionPeriod }}
+              
+            duration:
+              months: ${{ parameters.projectDuration }}
+              autoRenewal: ${{ parameters.autoRenewal }}
+              
+            resources:
+              tier: ${{ parameters.resourceTier }}
+              storage:
+                home: ${{ parameters.storageRequirements.homeStorage }}Gi
+                data: ${{ parameters.storageRequirements.dataStorage }}Gi
+                scratch: ${{ parameters.storageRequirements.scratchStorage }}Gi
+                
+            network:
+              isolation: ${{ parameters.networkIsolation }}
+              allowedSites:
+                {% for site in parameters.allowedExternalSites %}
+                - domain: {{ site.domain }}
+                  ports: {{ site.ports | dump }}
+                  justification: {{ site.justification }}
+                {% endfor %}
+                
+            services:
+              compute:
+                {% for service in parameters.computeServices %}
+                - {{ service }}
+                {% endfor %}
+              data:
+                {% for service in parameters.dataServices %}
+                - {{ service }}
+                {% endfor %}
+              development:
+                {% for service in parameters.developmentServices %}
+                - {{ service }}
+                {% endfor %}
+              ml:
+                {% for service in parameters.mlServices %}
+                - {{ service }}
+                {% endfor %}
 
     - id: createResearchersCrd
       name: Create Researchers CRD
       action: roadiehq:utils:fs:write
       input:
-        files:
-          - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/researchers.yaml
-            content: |
-              apiVersion: k8tre.io/v1alpha1
-              kind: ResearchTeam
-              metadata:
-                name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-team
-                namespace: k8tre-system
-                labels:
-                  k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-              spec:
-                project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                members:
-                  {% for researcher in parameters.researchers %}
-                  - username: {{ researcher.username }}
-                    role: {{ researcher.role }}
-                    accessLevel: {{ researcher.accessLevel }}
-                  {% endfor %}
-                keycloak:
-                  groupName: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                  scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.k8tre.local/scim' or 'https://keycloak.k8tre.local/scim' }}
+        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/researchers.yaml
+        content: |
+          apiVersion: k8tre.io/v1alpha1
+          kind: ResearchTeam
+          metadata:
+            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-team
+            namespace: k8tre-system
+            labels:
+              k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+          spec:
+            project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            members:
+              {% for researcher in parameters.researchers %}
+              - username: {{ researcher.username }}
+                role: {{ researcher.role }}
+                accessLevel: {{ researcher.accessLevel }}
+              {% endfor %}
+            keycloak:
+              groupName: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.k8tre.local/scim' or 'https://keycloak.k8tre.local/scim' }}
 
     - id: createNetworkPolicyCrd  
       name: Create Network Policy CRD
       action: roadiehq:utils:fs:write
       input:
-        files:
-          - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/network-policy.yaml
-            content: |
-              apiVersion: k8tre.io/v1alpha1
-              kind: ResearchNetworkPolicy
-              metadata:
-                name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-network
-                namespace: k8tre-system
-                labels:
-                  k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-              spec:
-                project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                dataClassification: ${{ parameters.dataClassification }}
-                isolation: ${{ parameters.networkIsolation }}
-                
-                ciliumPolicies:
-                  - name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-egress
-                    spec:
-                      endpointSelector:
-                        matchLabels:
-                          k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                      egress:
-                        # Allow internal cluster communication
-                        - toEntities:
-                          - cluster
-                        # Allow DNS
-                        - toEndpoints:
-                          - matchLabels:
-                              k8s:io.kubernetes.pod.namespace: kube-system
-                              k8s:app: kube-dns
-                          toPorts:
-                          - ports:
-                            - port: "53"
-                              protocol: UDP
-                        # Project-specific external sites
-                        {% for site in parameters.allowedExternalSites %}
-                        - toFQDNs:
-                          - matchName: {{ site.domain }}
-                          toPorts:
-                          {% for port in site.ports %}
-                          - ports:
-                            - port: "{{ port }}"
-                              protocol: TCP
-                          {% endfor %}
-                        {% endfor %}
+        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/network-policy.yaml
+        content: |
+          apiVersion: k8tre.io/v1alpha1
+          kind: ResearchNetworkPolicy
+          metadata:
+            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-network
+            namespace: k8tre-system
+            labels:
+              k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+          spec:
+            project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            dataClassification: ${{ parameters.dataClassification }}
+            isolation: ${{ parameters.networkIsolation }}
+            
+            ciliumPolicies:
+              - name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-egress
+                spec:
+                  endpointSelector:
+                    matchLabels:
+                      k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+                  egress:
+                    # Allow internal cluster communication
+                    - toEntities:
+                      - cluster
+                    # Allow DNS
+                    - toEndpoints:
+                      - matchLabels:
+                          k8s:io.kubernetes.pod.namespace: kube-system
+                          k8s:app: kube-dns
+                      toPorts:
+                      - ports:
+                        - port: "53"
+                          protocol: UDP
+                    # Project-specific external sites
+                    {% for site in parameters.allowedExternalSites %}
+                    - toFQDNs:
+                      - matchName: {{ site.domain }}
+                      toPorts:
+                      {% for port in site.ports %}
+                      - ports:
+                        - port: "{{ port }}"
+                          protocol: TCP
+                      {% endfor %}
+                    {% endfor %}
 
     - id: createCatalogInfo
       name: Create Backstage Catalog Info
       action: roadiehq:utils:fs:write
       input:
-        files:
-          - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/catalog-info.yaml
-            content: |
-              apiVersion: backstage.io/v1alpha1
-              kind: System
-              metadata:
-                name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                title: ${{ parameters.projectName }}
-                description: ${{ parameters.description }}
-                annotations:
-                  k8tre.io/project-id: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                  k8tre.io/principal-investigator: ${{ parameters.principalInvestigator }}
-                  k8tre.io/data-classification: ${{ parameters.dataClassification }}
-                  k8tre.io/research-domain: ${{ parameters.researchDomain }}
-                  k8tre.io/resource-tier: ${{ parameters.resourceTier }}
-                  k8tre.io/network-isolation: ${{ parameters.networkIsolation }}
-                  argocd/app-name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                  grafana/dashboard-selector: k8tre-project-${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                links:
-                  - url: https://jupyter.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.k8tre.local
-                    title: JupyterHub
-                    icon: web
-                  - url: https://gitea.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.k8tre.local
-                    title: Gitea Repository
-                    icon: web  
-                  - url: https://argocd.k8tre.local/applications/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-                    title: ArgoCD Application
-                    icon: web
-              spec:
-                type: research-project
-                lifecycle: experimental
-                owner: ${{ parameters.principalInvestigator }}
-                domain: research-computing
+        path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/catalog-info.yaml
+        content: |
+          apiVersion: backstage.io/v1alpha1
+          kind: System
+          metadata:
+            name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            title: ${{ parameters.projectName }}
+            description: ${{ parameters.description }}
+            annotations:
+              k8tre.io/project-id: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              k8tre.io/principal-investigator: ${{ parameters.principalInvestigator }}
+              k8tre.io/data-classification: ${{ parameters.dataClassification }}
+              k8tre.io/research-domain: ${{ parameters.researchDomain }}
+              k8tre.io/resource-tier: ${{ parameters.resourceTier }}
+              k8tre.io/network-isolation: ${{ parameters.networkIsolation }}
+              argocd/app-name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              grafana/dashboard-selector: k8tre-project-${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+            links:
+              - url: https://jupyter.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.k8tre.local
+                title: JupyterHub
+                icon: web
+              - url: https://gitea.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.k8tre.local
+                title: Gitea Repository
+                icon: web  
+              - url: https://argocd.k8tre.local/applications/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+                title: ArgoCD Application
+                icon: web
+          spec:
+            type: research-project
+            lifecycle: experimental
+            owner: ${{ parameters.principalInvestigator }}
+            domain: research-computing
 
     - id: createPr
       name: Create Pull Request
