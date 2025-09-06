@@ -278,7 +278,7 @@ spec:
   steps:
     - id: createProjectCrd
       name: Create Project CRD
-      action: fs:write
+      action: roadiehq:utils:fs:write
       input:
         files:
           - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/project.yaml
@@ -348,7 +348,7 @@ spec:
 
     - id: createResearchersCrd
       name: Create Researchers CRD
-      action: fs:write
+      action: roadiehq:utils:fs:write
       input:
         files:
           - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/researchers.yaml
@@ -374,7 +374,7 @@ spec:
 
     - id: createNetworkPolicyCrd  
       name: Create Network Policy CRD
-      action: fs:write
+      action: roadiehq:utils:fs:write
       input:
         files:
           - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/network-policy.yaml
@@ -424,7 +424,7 @@ spec:
 
     - id: createCatalogInfo
       name: Create Backstage Catalog Info
-      action: fs:write
+      action: roadiehq:utils:fs:write
       input:
         files:
           - path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/catalog-info.yaml
