@@ -304,7 +304,20 @@ spec:
           justification: ${{ parameters.justification }}
           user: ${{ user.entity.metadata.name }}
           now: ${{ '' | now }}
-
+    - id: renameFiles
+      name: Rename files with correct extensions
+      action: fs:rename
+      input:
+        files:
+          - from: projects/${{ parameters.projectName | lower }}/catalog-info.yaml.njk
+            to: projects/${{ parameters.projectName | lower }}/catalog-info.yaml
+          - from: projects/${{ parameters.projectName | lower }}/network-policy.yaml.njk
+            to: projects/${{ parameters.projectName | lower }}/network-policy.yaml
+          - from: projects/${{ parameters.projectName | lower }}/researchers.yaml.njk
+            to: projects/${{ parameters.projectName | lower }}/researchers.yaml
+          - from: projects/${{ parameters.projectName | lower }}/project.yaml.njk
+            to: projects/${{ parameters.projectName | lower }}/project.yaml
+  
     # - id: publish
     #   name: Publish to GitHub
     #   action: publish:github
