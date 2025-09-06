@@ -530,7 +530,7 @@ spec:
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps['create-pr'].output.repoContentsUrl }}
-        catalogInfoPath: '/projects/${{ steps['generate-project-id'].output.projectId }}/catalog-info.yaml'
+        catalogInfoPath: "/projects/${{ steps['generate-project-id'].output.projectId }}/catalog-info.yaml"
 
   output:
     links:
