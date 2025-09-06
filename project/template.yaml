@@ -1,0 +1,77 @@
+
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: user
+  title: User
+  description: Template for entering user information
+spec:
+  owner: user:guest
+  type: service
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Fill in some steps
+      required:
+        - name
+      properties:
+        description: 
+          type: string
+        apps:
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type: 
+                type: string
+              url: 
+                type: string
+              osType:
+                type: string
+                enum: ["linux", "windows"]
+              config:
+                type: object
+                additionalProperties: true
+        profiles:
+          type: array
+          items:
+            type: object
+            properties:
+              display_name:
+                type: string
+              description:
+                type: string
+              slug:
+                type: string
+              kubespawner_override:
+                type: object
+                properties:
+                  image:
+                    type: string
+                  env:
+                    type: object
+                    additionalProperties: true
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{parameters.name}}
+          owner: ${{parameters.owner}}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
