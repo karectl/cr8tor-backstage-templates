@@ -1,12 +1,12 @@
-# backstage-templates/k8tre-research-project/template.yaml
+# backstage-templates/karectl-research-project/template.yaml
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: k8tre-research-project
-  title: Create K8TRE Research Project
+  name: karectl-research-project
+  title: Create KARECTL Research Project
   description: Provision a new research project workspace with required services and access controls
   tags:
-    - k8tre
+    - karectl
     - research
     - workspace
 spec:
@@ -282,15 +282,15 @@ spec:
       input:
         path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/project.yaml
         content: |
-          apiVersion: k8tre.io/v1alpha1
+          apiVersion: karectl.io/v1alpha1
           kind: ResearchProject
           metadata:
             name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-            namespace: k8tre-system
+            namespace: karectl-system
             annotations:
-              k8tre.io/created-by: ${{ user.entity.metadata.name }}
-              k8tre.io/created-at: ${{ '' | now }}
-              k8tre.io/backstage-entity: ${{ user.entity.metadata.name }}
+              karectl.io/created-by: ${{ user.entity.metadata.name }}
+              karectl.io/created-at: ${{ '' | now }}
+              karectl.io/backstage-entity: ${{ user.entity.metadata.name }}
           spec:
             project:
               name: ${{ parameters.projectName }}
@@ -351,13 +351,13 @@ spec:
       input:
         path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/researchers.yaml
         content: |
-          apiVersion: k8tre.io/v1alpha1
+          apiVersion: karectl.io/v1alpha1
           kind: ResearchTeam
           metadata:
             name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-team
-            namespace: k8tre-system
+            namespace: karectl-system
             labels:
-              k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              karectl.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
           spec:
             project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
             members:
@@ -368,7 +368,7 @@ spec:
               {% endfor %}
             keycloak:
               groupName: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-              scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.k8tre.local/scim' or 'https://keycloak.k8tre.local/scim' }}
+              scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.karectl.local/scim' or 'https://keycloak.karectl.local/scim' }}
 
     - id: createNetworkPolicyCrd  
       name: Create Network Policy CRD
@@ -376,13 +376,13 @@ spec:
       input:
         path: projects/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}/network-policy.yaml
         content: |
-          apiVersion: k8tre.io/v1alpha1
+          apiVersion: karectl.io/v1alpha1
           kind: ResearchNetworkPolicy
           metadata:
             name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}-network
-            namespace: k8tre-system
+            namespace: karectl-system
             labels:
-              k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              karectl.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
           spec:
             project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
             dataClassification: ${{ parameters.dataClassification }}
@@ -393,7 +393,7 @@ spec:
                 spec:
                   endpointSelector:
                     matchLabels:
-                      k8tre.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+                      karectl.io/project: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
                   egress:
                     # Allow internal cluster communication
                     - toEntities:
@@ -432,22 +432,22 @@ spec:
             title: ${{ parameters.projectName }}
             description: ${{ parameters.description }}
             annotations:
-              k8tre.io/project-id: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-              k8tre.io/principal-investigator: ${{ parameters.principalInvestigator }}
-              k8tre.io/data-classification: ${{ parameters.dataClassification }}
-              k8tre.io/research-domain: ${{ parameters.researchDomain }}
-              k8tre.io/resource-tier: ${{ parameters.resourceTier }}
-              k8tre.io/network-isolation: ${{ parameters.networkIsolation }}
+              karectl.io/project-id: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              karectl.io/principal-investigator: ${{ parameters.principalInvestigator }}
+              karectl.io/data-classification: ${{ parameters.dataClassification }}
+              karectl.io/research-domain: ${{ parameters.researchDomain }}
+              karectl.io/resource-tier: ${{ parameters.resourceTier }}
+              karectl.io/network-isolation: ${{ parameters.networkIsolation }}
               argocd/app-name: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
-              grafana/dashboard-selector: k8tre-project-${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              grafana/dashboard-selector: karectl-project-${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
             links:
-              - url: https://jupyter.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.k8tre.local
+              - url: https://jupyter.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.karectl.local
                 title: JupyterHub
                 icon: web
-              - url: https://gitea.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.k8tre.local
+              - url: https://gitea.${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}.karectl.local
                 title: Gitea Repository
                 icon: web  
-              - url: https://argocd.k8tre.local/applications/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
+              - url: https://argocd.karectl.local/applications/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
                 title: ArgoCD Application
                 icon: web
           spec:
@@ -460,11 +460,11 @@ spec:
       name: Create Pull Request
       action: publish:github:pull-request
       input:
-        repoUrl: github.com?repo=k8tre-projects&owner=k8tre
+        repoUrl: github.com?repo=karectl-projects&owner=karectl-crates
         branchName: project/${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
         title: 'New Research Project: ${{ parameters.projectName }}'
         description: |
-          ## New K8TRE Research Project Request
+          ## New KARECTL Research Project Request
           
           **Project:** ${{ parameters.projectName }}
           **PI:** ${{ parameters.principalInvestigator }}
