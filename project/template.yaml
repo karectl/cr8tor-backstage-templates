@@ -372,13 +372,13 @@ spec:
           
           Once approved and merged, ArgoCD will provision the workspace automatically.
 
-    - id: register
-      name: Register in Backstage Catalog
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps['createPr'].input.repoUrl }}
-        optional: true
-        catalogInfoPath: "/projects/${{ parameters.projectName | lower }}/catalog-info.yaml"
+    # - id: register
+    #   name: Register in Backstage Catalog
+    #   action: catalog:register
+    #   input:
+    #     repoContentsUrl: ${{ steps['createPr'].input.repoUrl }}
+    #     optional: true
+    #     catalogInfoPath: "/projects/${{ parameters.projectName | lower }}/catalog-info.yaml"
         
 
   output:
