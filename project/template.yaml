@@ -276,24 +276,24 @@ spec:
           description: Provide justification for resource requirements and external access needs
 
   steps:
-    - id: generate-project-id
+    - id: generateProjectId
       name: Generate Project ID
       action: roadiehq:utils:merge
       input:
         content:
           projectId: ${{ parameters.projectName | lower }}-${{ '' | now | date('YYYY-MM') }}
 
-    - id: create-project-crd
+    - id: createProjectCrd
       name: Create Project CRD
       action: fs:write
       input:
         files:
-          - path: projects/${{ steps['generate-project-id'].output.projectId }}/project.yaml
+          - path: projects/${{ steps['generateProjectId'].output.projectId }}/project.yaml
             content: |
               apiVersion: k8tre.io/v1alpha1
               kind: ResearchProject
               metadata:
-                name: ${{ steps['generate-project-id'].output.projectId }}
+                name: ${{ steps['generateProjectId'].output.projectId }}
                 namespace: k8tre-system
                 annotations:
                   k8tre.io/created-by: ${{ user.entity.metadata.name }}
@@ -353,22 +353,22 @@ spec:
                     - {{ service }}
                     {% endfor %}
 
-    - id: create-researchers-crd
+    - id: createResearchersCrd
       name: Create Researchers CRD
       action: fs:write
       input:
         files:
-          - path: projects/${{ steps['generate-project-id'].output.projectId }}/researchers.yaml
+          - path: projects/${{ steps['generateProjectId'].output.projectId }}/researchers.yaml
             content: |
               apiVersion: k8tre.io/v1alpha1
               kind: ResearchTeam
               metadata:
-                name: ${{ steps['generate-project-id'].output.projectId }}-team
+                name: ${{ steps['generateProjectId'].output.projectId }}-team
                 namespace: k8tre-system
                 labels:
-                  k8tre.io/project: ${{ steps['generate-project-id'].output.projectId }}
+                  k8tre.io/project: ${{ steps['generateProjectId'].output.projectId }}
               spec:
-                project: ${{ steps['generate-project-id'].output.projectId }}
+                project: ${{ steps['generateProjectId'].output.projectId }}
                 members:
                   {% for researcher in parameters.researchers %}
                   - username: {{ researcher.username }}
@@ -376,34 +376,34 @@ spec:
                     accessLevel: {{ researcher.accessLevel }}
                   {% endfor %}
                 keycloak:
-                  groupName: ${{ steps['generate-project-id'].output.projectId }}
+                  groupName: ${{ steps['generateProjectId'].output.projectId }}
                   scimEndpoint: ${{ parameters.dataClassification == 'restricted' and 'https://keycloak-restricted.k8tre.local/scim' or 'https://keycloak.k8tre.local/scim' }}
 
-    - id: create-network-policy-crd  
+    - id: createNetworkPolicyCrd  
       name: Create Network Policy CRD
       action: fs:write
       input:
         files:
-          - path: projects/${{ steps['generate-project-id'].output.projectId }}/network-policy.yaml
+          - path: projects/${{ steps['generateProjectId'].output.projectId }}/network-policy.yaml
             content: |
               apiVersion: k8tre.io/v1alpha1
               kind: ResearchNetworkPolicy
               metadata:
-                name: ${{ steps['generate-project-id'].output.projectId }}-network
+                name: ${{ steps['generateProjectId'].output.projectId }}-network
                 namespace: k8tre-system
                 labels:
-                  k8tre.io/project: ${{ steps['generate-project-id'].output.projectId }}
+                  k8tre.io/project: ${{ steps['generateProjectId'].output.projectId }}
               spec:
-                project: ${{ steps['generate-project-id'].output.projectId }}
+                project: ${{ steps['generateProjectId'].output.projectId }}
                 dataClassification: ${{ parameters.dataClassification }}
                 isolation: ${{ parameters.networkIsolation }}
                 
                 ciliumPolicies:
-                  - name: ${{ steps['generate-project-id'].output.projectId }}-egress
+                  - name: ${{ steps['generateProjectId'].output.projectId }}-egress
                     spec:
                       endpointSelector:
                         matchLabels:
-                          k8tre.io/project: ${{ steps['generate-project-id'].output.projectId }}
+                          k8tre.io/project: ${{ steps['generateProjectId'].output.projectId }}
                       egress:
                         # Allow internal cluster communication
                         - toEntities:
@@ -429,36 +429,36 @@ spec:
                           {% endfor %}
                         {% endfor %}
 
-    - id: create-catalog-info
+    - id: createCatalogInfo
       name: Create Backstage Catalog Info
       action: fs:write
       input:
         files:
-          - path: projects/${{ steps['generate-project-id'].output.projectId }}/catalog-info.yaml
+          - path: projects/${{ steps['generateProjectId'].output.projectId }}/catalog-info.yaml
             content: |
               apiVersion: backstage.io/v1alpha1
               kind: System
               metadata:
-                name: ${{ steps['generate-project-id'].output.projectId }}
+                name: ${{ steps['generateProjectId'].output.projectId }}
                 title: ${{ parameters.projectName }}
                 description: ${{ parameters.description }}
                 annotations:
-                  k8tre.io/project-id: ${{ steps['generate-project-id'].output.projectId }}
+                  k8tre.io/project-id: ${{ steps['generateProjectId'].output.projectId }}
                   k8tre.io/principal-investigator: ${{ parameters.principalInvestigator }}
                   k8tre.io/data-classification: ${{ parameters.dataClassification }}
                   k8tre.io/research-domain: ${{ parameters.researchDomain }}
                   k8tre.io/resource-tier: ${{ parameters.resourceTier }}
                   k8tre.io/network-isolation: ${{ parameters.networkIsolation }}
-                  argocd/app-name: ${{ steps['generate-project-id'].output.projectId }}
-                  grafana/dashboard-selector: k8tre-project-${{ steps['generate-project-id'].output.projectId }}
+                  argocd/app-name: ${{ steps['generateProjectId'].output.projectId }}
+                  grafana/dashboard-selector: k8tre-project-${{ steps['generateProjectId'].output.projectId }}
                 links:
-                  - url: https://jupyter.${{ steps['generate-project-id'].output.projectId }}.k8tre.local
+                  - url: https://jupyter.${{ steps['generateProjectId'].output.projectId }}.k8tre.local
                     title: JupyterHub
                     icon: web
-                  - url: https://gitea.${{ steps['generate-project-id'].output.projectId }}.k8tre.local
+                  - url: https://gitea.${{ steps['generateProjectId'].output.projectId }}.k8tre.local
                     title: Gitea Repository
                     icon: web  
-                  - url: https://argocd.k8tre.local/applications/${{ steps['generate-project-id'].output.projectId }}
+                  - url: https://argocd.k8tre.local/applications/${{ steps['generateProjectId'].output.projectId }}
                     title: ArgoCD Application
                     icon: web
               spec:
@@ -467,12 +467,12 @@ spec:
                 owner: ${{ parameters.principalInvestigator }}
                 domain: research-computing
 
-    - id: create-pr
+    - id: createPr
       name: Create Pull Request
       action: publish:github:pull-request
       input:
         repoUrl: github.com?repo=k8tre-projects&owner=k8tre
-        branchName: project/${{ steps['generate-project-id'].output.projectId }}
+        branchName: project/${{ steps['generateProjectId'].output.projectId }}
         title: 'New Research Project: ${{ parameters.projectName }}'
         description: |
           ## New K8TRE Research Project Request
@@ -529,12 +529,12 @@ spec:
       name: Register in Backstage Catalog
       action: catalog:register
       input:
-        repoContentsUrl: ${{ steps['create-pr'].output.repoContentsUrl }}
-        catalogInfoPath: "/projects/${{ steps['generate-project-id'].output.projectId }}/catalog-info.yaml"
+        repoContentsUrl: ${{ steps['createPr'].output.repoContentsUrl }}
+        catalogInfoPath: "/projects/${{ steps['generateProjectId'].output.projectId }}/catalog-info.yaml"
 
   output:
     links:
       - title: View Pull Request
-        url: ${{ steps['create-pr'].output.remoteUrl }}
+        url: ${{ steps['createPr'].output.remoteUrl }}
       - title: View in Catalog
         entityRef: ${{ steps['register'].output.entityRef }}
