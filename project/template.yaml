@@ -376,7 +376,9 @@ spec:
       name: Register in Backstage Catalog
       action: catalog:register
       input:
-        repoContentsUrl: ${{ steps['createPr'].output.remoteUrl }}
+        repoContentsUrl: ${{ steps['createPr'].input.repoUrl }}
+        optional: true
+        catalogInfoPath: "/projects/${{ parameters.projectName | lower }}/catalog-info.yaml"
         
 
   output:
