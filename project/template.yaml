@@ -305,12 +305,12 @@ spec:
           user: ${{ user.entity.metadata.name }}
           now: ${{ '' | now }}
 
-    - id: publish
-      name: Publish to GitHub
-      action: publish:github
-      input:
-        repoUrl: github.com?repo=karectl-projects&owner=karectl-crates
-        defaultBranch: main
+    # - id: publish
+    #   name: Publish to GitHub
+    #   action: publish:github
+    #   input:
+    #     repoUrl: github.com?repo=karectl-projects&owner=karectl-crates
+    #     defaultBranch: main
 
     - id: createPr
       name: Create Pull Request
